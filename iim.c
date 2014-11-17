@@ -19,9 +19,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define SERVER_NICK "-!-"
+#define SERVER_NICK "#-!-"
 #define SERVER_PORT "6667"
-#define SERVER_HOST "irc.freenode.net"
+#define SERVER_HOST "chat.eu.freenode.net"
 
 #define IRCDIR      "irc"
 #define INFILE      "in"
@@ -184,10 +184,6 @@ static bool add_channel(char *channame) {
 }
 
 static void write_out(char *channame, const char *nickname, const char *mesg) {
-	const time_t t = time(NULL);
-	char timebuf[strlen("YYYY-MM-DD HH:MM:SS") + 1];
-	strftime(timebuf, sizeof timebuf, "%F %T", localtime(&t));
-
 	char outpath[BUF_PATH_LEN] = OUTFILE;
 	if (*channame && to_irc_lower(channame, strlen(channame)))
 		snprintf(outpath, sizeof outpath, "%s/%s", channame, OUTFILE);
@@ -195,7 +191,7 @@ static void write_out(char *channame, const char *nickname, const char *mesg) {
 	FILE *outfile = fopen(outpath, "a");
 	if (!outfile && !(outfile = fopen(OUTFILE, "a"))) return;
 
-	fprintf(outfile, "%s <%s> %s\n", timebuf, nickname, mesg);
+	fprintf(outfile, "%s: %s\n", nickname, mesg);
 	fclose(outfile);
 }
 
@@ -407,10 +403,8 @@ int main(int argc, char *argv[]) {
 	{
 		const bool p = *pref != '\0', n = *nick != '\0';
 		if (!p || !n) {
-			struct passwd *s = getpwuid(getuid());
-			if (!s) err("failed to get passwd file\n");
-			if (!p) snprintf(pref, sizeof pref, "%s/%s", s->pw_dir, IRCDIR);
-			if (!n) snprintf(nick, sizeof nick, "%s", s->pw_name);
+         sprintf(pref, "/irc");
+         sprintf(nick, "tty23");
 		}
 
 		if (!name) name = nick;
