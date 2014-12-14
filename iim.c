@@ -351,13 +351,18 @@ static void handle_channel_input(struct channel *c) {
 	const bool r = read_line(c->fd, input, sizeof input);
 	unsigned mesg_len = 0, cmd = input[1];
 
+	fprintf(stderr, "'%s' : $ '%s'\n", c->name, input);
 	if (!r) {
 		if (errno != EBADF) close(c->fd);
 		if ((c->fd = open_channel(c->name)) == -1)
 			remove_channel(c->name);
-	} else if (input[0] != '/') {
+	//} else if (input[0] != '/') {
+	// debug log last command
+	} else if (c->name[0] != '\0') {
+		// if this is a channel, unconditionally copy input
 		mesg_len = handle_priv(c->name, input, mesg, sizeof mesg);
-	} else if ((input[2] == ' ' || input[2] == '\0')) switch (cmd) {
+	} else if (input[0] == '/' && (input[2] == ' ' || input[2] == '\0')) switch (cmd) {
+		// FIXME: still might need a way to do these from within tty23
 		case 'a': mesg_len = handle_away (         input+2, mesg, sizeof mesg); break;
 		case 'j': mesg_len = handle_join (         input+2, mesg, sizeof mesg); break;
 		case 'n': mesg_len = handle_nick (         input+2, mesg, sizeof mesg); break;
